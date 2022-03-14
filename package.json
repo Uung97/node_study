@@ -1,0 +1,23 @@
+{
+  "name": "node-study",
+  "version": "1.0.0",
+  "description": "class101 web study",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "unggi hong",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.26.0",
+    "cheerio": "^1.0.0-rc.10",
+    "ejs": "^3.1.6",
+    "express": "^4.17.2",
+    "helmet": "^4.6.0",
+    "iconv-lite": "^0.6.3",
+    "json2xls": "^0.1.2",
+    "mysql2": "^2.3.3",
+    "sequelize": "^5.22.5",
+    "supervisor": "^0.12.0"
+  }
+}

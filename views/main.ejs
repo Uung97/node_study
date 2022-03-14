@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= locals.title %></title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="/public/main.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+</head>
+<body>
+    
+    <!-- Image and text -->
+    <nav class="navbar navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">
+        <img src="https://media.istockphoto.com/photos/saver-to-start-movie-picture-id492365655?b=1&k=20&m=492365655&s=170667a&w=0&h=BqfY1iIKF1XvvoFcvstQ0eYAueQ6Oq2jPNBWxv_1ELY=" width="30" height="30" class="d-inline-block align-top" alt="">
+        간편 영화 후기
+        </a>
+    </nav>
+
+    <div class="container">
+        <div class="jumbotron" id="jumbotron">
+            <h1 class="display-4">인기/최신 영화에 한마디씩!</h1>
+            <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p>
+            <hr class="my-4">
+            <p>It uses utility classes for typography and spacing to space content out within the larger container.</p>
+            <a class="btn btn-danger btn-lg" href="#" role="button">Learn more</a>
+          </div>
+
+          <div class="row row-cols-1 row-cols-md-3" id="movie-list">
+
+          </div>
+    </div>
+
+    <div class="modal" id="review-modal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">후기</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              
+            </div>
+            <div class="modal-footer">
+              <input type="text" class="form-control" id="review" style="width: 70%">
+              <button type="button" class="btn btn-primary" onclick="add_review()">후기 쓰기</button>
+            </div>
+          </div>
+        </div>
+    </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let target_id = 0
+
+
+        $(document).ready(function(){
+            console.log("웹페이지 시작")
+
+            $.ajax({
+                url:"https://api.themoviedb.org/3/movie/popular?api_key=10923b261ba94d897ac6b81148314a3f&page=1",
+                data:{"key":"value"},
+                type:"GET",
+                success:function(json){
+                    console.log(json)
+
+                    $("#movie-list").html('')
+                    let movie_list = json.results
+
+
+                    for (let index = 0; index < movie_list.length; index++) {
+                        let card = `<div class="col mb-4">
+                            <div class="card">
+                                <img src="${'https://image.tmdb.org/t/p/w500' + movie_list[index].poster_path}" class="card-img-top" alt="...">
+                                <div class="card-body">
+                                <h5 class="card-title">${movie_list[index].original_title}</h5>
+                                <button type="button" class="btn btn-success" id="review-button" onclick="review(${movie_list[index].id})">리뷰 보기</button>
+                                </div>
+                            </div>
+                            </div>`
+
+                        
+                        $("#movie-list").append(card)
+                    }
+                },
+                error:function(json){
+
+                }
+            })
+        })
+
+        function review(id){
+            target_id = id
+
+            $.ajax({
+                url:`/review/read?movie_id=${target_id}`,
+                data:{},
+                type:"GET",
+                success:function(json){
+                    console.log(json)
+                    let reviews = json.data
+                    $(".modal-body").html('')
+                    for (let index = 0; index < reviews.length; index++) {
+                        $(".modal-body").append(`<p>${reviews[index].review}</p>`)
+                    }
+                }
+            })
+
+            $('#review-modal').modal('show')
+        }
+
+        function add_review(){
+            let review = $("#review").val()
+            let review_html = `<p>${review}</p>`
+
+            $.ajax({
+                url:`/review/create`,
+                data:{
+                    movie_id:target_id,
+                    review:review
+                },
+                type:"POST",
+                success:function(json){
+                    console.log(json)
+                    if(json.success == 200){
+                        console.log("저장 완료")
+                    }else if(json.success == 400){
+                        alert("데이터가 이상하다.");
+                    }
+                }
+            })
+
+            $(".modal-body").append(review_html)
+            $("#review").val("")
+        }
+    </script>
+
+</body>
+</html>
